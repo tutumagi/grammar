@@ -123,18 +123,3 @@ func (g *G) symbolFollowSet(sym Symbol) SymbolSet {
 
 	return followB
 }
-
-const (
-	NotFound = -1
-)
-
-func indexOfSymbolList(sym Symbol, list []Symbol) int {
-	ret := NotFound
-	for i, s := range list {
-		if s == sym {
-			ret = i
-			break
-		}
-	}
-	return ret
-}

@@ -63,3 +63,18 @@ func (set SymbolSet) intersect(other SymbolSet) SymbolSet {
 func (set SymbolSet) disjoint(other SymbolSet) bool {
 	return len(set.intersect(other)) == 0
 }
+
+const (
+	NotFound = -1
+)
+
+func indexOfSymbolList(sym Symbol, list []Symbol) int {
+	ret := NotFound
+	for i, s := range list {
+		if s == sym {
+			ret = i
+			break
+		}
+	}
+	return ret
+}
