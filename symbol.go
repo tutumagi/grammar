@@ -20,6 +20,10 @@ func isTerminal(sym Symbol) bool {
 	return !(c >= 'A' && c <= 'Z')
 }
 
+func isNonTerminal(sym Symbol) bool {
+	return !(isEpsilon(sym) || isTerminal(sym))
+}
+
 type SymbolSet map[Symbol]struct{}
 
 func newSymbolSet(syms ...Symbol) SymbolSet {

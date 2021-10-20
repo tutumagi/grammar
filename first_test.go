@@ -15,30 +15,30 @@ F   -> ( E ) | id
 `
 
 func TestMakeRules(t *testing.T) {
-	expectRules := map[Symbol][]*Production{
+	expectProductions := map[Symbol][]*Production{
 		"E": {
-			newProduction("E", "T", "E'"),
+			newProduction("E").RHS("T", "E'"),
 		},
 		"E'": {
-			newProduction("E'", "+", "T", "E'"),
-			newProduction("E'", "e"),
+			newProduction("E'").RHS("+", "T", "E'"),
+			newProduction("E'").RHS("e"),
 		},
 		"T": {
-			newProduction("T", "F", "T'"),
+			newProduction("T").RHS("F", "T'"),
 		},
 		"T'": {
-			newProduction("T'", "*", "F", "T'"),
-			newProduction("T'", "e"),
+			newProduction("T'").RHS("*", "F", "T'"),
+			newProduction("T'").RHS("e"),
 		},
 		"F": {
-			newProduction("F", "(", "E", ")"),
-			newProduction("F", "id"),
+			newProduction("F").RHS("(", "E", ")"),
+			newProduction("F").RHS("id"),
 		},
 	}
 
 	g := NewGrammar(testData)
 	productions := g.makeProductions()
-	assert.Equal(t, expectRules, productions)
+	assert.Equal(t, expectProductions, productions)
 
 	g.makeFirstSet()
 	expectFirstSet := map[Symbol]SymbolSet{

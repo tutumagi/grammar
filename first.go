@@ -23,11 +23,16 @@ type Production struct {
 	rhs []Symbol
 }
 
-func newProduction(lhs Symbol, rhs ...Symbol) *Production {
+func newProduction(lhs Symbol) *Production {
 	return &Production{
 		lhs: lhs,
-		rhs: rhs,
+		rhs: make([]Symbol, 0),
 	}
+}
+
+func (p *Production) RHS(sym ...Symbol) *Production {
+	p.rhs = sym
+	return p
 }
 
 func NewGrammar(source string) *G {
@@ -69,7 +74,7 @@ func (g *G) makeLineProduction(line string) (lhs Symbol, productions []*Producti
 				// 每个符号之间用空格隔开，比如 S -> A B C d
 				symbols := strings.Split(strings.TrimSpace(rule), " ")
 
-				productions = append(productions, newProduction(lhs, symbols...))
+				productions = append(productions, newProduction(lhs).RHS(symbols...))
 			}
 		}
 	}
@@ -80,58 +85,30 @@ func (g *G) makeFirstSet() {
 	g.firstSet = make(FirstSet)
 
 	for sym := range g.productions {
-		g.firstSet[sym] = g.firstSetBySymbol(sym)
+		g.firstSet[sym] = g.firstSetByProductions(sym)
 	}
 }
 
-func (g *G) firstSetBySymbol(sym Symbol) (set SymbolSet) {
-	set = make(SymbolSet)
-	defer func() {
-		if ss, ok := g.firstSet[sym]; ok {
-			ss.union(set)
-		} else {
-			g.firstSet[sym] = set
-		}
-	}()
-	if isTerminal(sym) {
-		set.add(sym)
-	} else if isEpsilon(sym) {
-		set.add(sym)
-	} else {
-		var ok bool
-		if set, ok = g.firstSet[sym]; ok {
-			return
-		}
-		set = g.firstSetByProductions(sym, g.productions[sym])
-		g.firstSet[sym] = set
+func (g *G) firstSetByProductions(sym Symbol) SymbolSet {
+	set := make(SymbolSet)
+	for _, production := range g.productions[sym] {
+		set.union(g.rhsFirstSet(production.rhs...))
 	}
-	return
-}
-
-func (g *G) firstSetByProductions(lhs Symbol, productions []*Production) (set SymbolSet) {
-	set = make(SymbolSet)
-	for _, production := range productions {
-		set.union(g.firstSetByProduction(production))
-	}
-
 	return set
 }
 
-func (g *G) firstSetByProduction(production *Production) (set SymbolSet) {
+func (g *G) rhsFirstSet(symbols ...Symbol) (set SymbolSet) {
 	set = make(SymbolSet)
-	var preSet SymbolSet
-	for _, sym := range production.rhs {
-		if preSet != nil {
-			if preSet.contain(epsilonS) {
-				preSet.remove(epsilonS)
-			} else {
-				break
-			}
+	head := symbols[0]
+	rest := symbols[1:]
+	if isNonTerminal(head) {
+		headSet := g.firstSetByProductions(head)
+		set.union(headSet)
+		if headSet.contain(epsilonS) {
+			set.union(g.rhsFirstSet(rest...))
 		}
-		curSet := g.firstSetBySymbol(sym)
-		set.union(curSet)
-
-		preSet = curSet
+	} else {
+		set.add(head)
 	}
 	return
 }
