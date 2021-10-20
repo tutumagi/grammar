@@ -12,10 +12,12 @@ type (
 type G struct {
 	source string
 
+	start Symbol // start rule
+
 	productions map[Symbol][]*Production
 
-	firstSet FirstSet
-	// followSet FollowSet
+	firstSet  FirstSet
+	followSet FollowSet
 }
 
 type Production struct {
@@ -46,6 +48,9 @@ func (g *G) makeProductions() map[Symbol][]*Production {
 	g.productions = make(map[Symbol][]*Production, len(lines))
 	for _, line := range lines {
 		sym, lineRules := makeLineProduction(line)
+		if g.start == "" {
+			g.start = sym // start rule
+		}
 		if len(lineRules) > 0 {
 			g.productions[sym] = append(g.productions[sym], lineRules...)
 		}
@@ -85,11 +90,14 @@ func (g *G) makeFirstSet() {
 	g.firstSet = make(FirstSet)
 
 	for sym := range g.productions {
-		g.firstSet[sym] = g.symbolFirstSet(sym)
+		g.firstSet[sym] = g.nonterminalFirstSet(sym)
 	}
 }
 
-func (g *G) symbolFirstSet(sym Symbol) SymbolSet {
+func (g *G) nonterminalFirstSet(sym Symbol) SymbolSet {
+	if set, ok := g.firstSet[sym]; ok {
+		return set
+	}
 	set := make(SymbolSet)
 	for _, production := range g.productions[sym] {
 		set.union(g.rhsFirstSet(production.rhs...))
@@ -97,13 +105,13 @@ func (g *G) symbolFirstSet(sym Symbol) SymbolSet {
 	return set
 }
 
-func (g *G) rhsFirstSet(symbols ...Symbol) (set SymbolSet) {
-	set = make(SymbolSet)
+func (g *G) rhsFirstSet(symbols ...Symbol) SymbolSet {
+	set := make(SymbolSet)
 	head := symbols[0]
 	rest := symbols[1:]
 	if isNonTerminal(head) {
 		// 如果是 nonterminal
-		headSet := g.symbolFirstSet(head)
+		headSet := g.nonterminalFirstSet(head)
 		set.union(headSet)
 		if len(rest) > 0 {
 			// FirstSet(head) 包含 ε，则结果为 FirstSet(head) - ε + FirstSet(rest)
@@ -117,5 +125,73 @@ func (g *G) rhsFirstSet(symbols ...Symbol) (set SymbolSet) {
 		// 如果是 ε 或者 terminal，则直接加入到 FirstSet
 		set.add(head)
 	}
-	return
+	return set
+}
+
+func (g *G) makeFollowSet() {
+	g.followSet = make(FollowSet)
+
+	for sym := range g.productions {
+		if isNonTerminal(sym) {
+			g.followSet[sym] = g.symbolFollowSet(sym)
+		}
+	}
+}
+
+func (g *G) symbolFollowSet(sym Symbol) SymbolSet {
+	if set, ok := g.followSet[sym]; ok {
+		return set
+	}
+	// followB 方便注释
+	followB := make(SymbolSet)
+	// 规则1: 如果B是产生式开始的地方，则将input right end marker(这里是$) 放入 Follow(B)
+	if sym == g.start {
+		followB.add(rightEndMarkerS)
+	}
+	for _, productions := range g.productions {
+		for _, production := range productions {
+			ret := indexOfSymbolList(sym, production.rhs)
+			if ret == NotFound {
+				continue
+			}
+			beta := production.rhs[ret+1:]
+			if len(beta) > 0 {
+				// 规则2
+				// 如果产生式如下形式：X -> ɑBβ，则先计算 First(β)
+				betaFirst := g.rhsFirstSet(beta...)
+				// 如果First(β)不包含ε 则Follow(B) = First(β)
+				followB.union(betaFirst)
+				if betaFirst.contain(epsilonS) {
+					// 如果First(β)包含ε 则Follow(B) = First(β) - ε + Follow(X)
+					followB.remove(epsilonS)
+					followB.union(g.symbolFollowSet(production.lhs))
+				}
+			} else {
+				// fix infinite recursion
+				if production.lhs != sym {
+					// 规则3
+					// 如果产生式如下形式：X -> ɑB
+					// 则 Follow(X) 包含在 Follow(B)当中
+					followB.union(g.symbolFollowSet(production.lhs))
+				}
+			}
+		}
+	}
+
+	return followB
+}
+
+const (
+	NotFound = -1
+)
+
+func indexOfSymbolList(sym Symbol, list []Symbol) int {
+	ret := NotFound
+	for i, s := range list {
+		if s == sym {
+			ret = i
+			break
+		}
+	}
+	return ret
 }

@@ -12,8 +12,9 @@ import (
 )
 
 type TestData struct {
-	Source []string    `json:"source"`
-	Expect *ExpectData `json:"expect"`
+	Filename string      `json:"-"`
+	Source   []string    `json:"source"`
+	Expect   *ExpectData `json:"expect"`
 }
 
 type ExpectData struct {
@@ -57,12 +58,17 @@ func TestMakeFirstFollow(t *testing.T) {
 	expectdatas := readTestData()
 
 	for _, testData := range expectdatas {
-		g := NewGrammar(strings.Join(testData.Source, "\n"))
-		productions := g.makeProductions()
-		assert.Equal(t, testData.Expect.Production, productions)
+		t.Run(testData.Filename, func(t *testing.T) {
+			g := NewGrammar(strings.Join(testData.Source, "\n"))
+			productions := g.makeProductions()
+			assert.Equal(t, testData.Expect.Production, productions)
 
-		g.makeFirstSet()
-		assert.Equal(t, testData.Expect.FirstSet, g.firstSet)
+			g.makeFirstSet()
+			assert.Equal(t, testData.Expect.FirstSet, g.firstSet)
+
+			g.makeFollowSet()
+			assert.Equal(t, testData.Expect.FollowSet, g.followSet)
+		})
 	}
 }
 
@@ -75,11 +81,14 @@ func readTestData() []*TestData {
 			if err != nil {
 				return err
 			}
-			tmp := &TestData{}
+			tmp := &TestData{
+				Filename: filepath.Base(path),
+			}
 			err = json.Unmarshal(bb, tmp)
 			if err != nil {
 				return err
 			}
+
 			expectdatas = append(expectdatas, tmp)
 			return err
 		}
