@@ -5,8 +5,8 @@ import (
 )
 
 type (
-	FirstSet  map[Symbol]SymbolSet
-	FollowSet map[Symbol]SymbolSet
+	FirstSet  = map[Symbol]SymbolSet
+	FollowSet = map[Symbol]SymbolSet
 )
 
 type G struct {
@@ -45,7 +45,7 @@ func (g *G) makeProductions() map[Symbol][]*Production {
 	lines := strings.Split(g.source, "\n")
 	g.productions = make(map[Symbol][]*Production, len(lines))
 	for _, line := range lines {
-		sym, lineRules := g.makeLineProduction(line)
+		sym, lineRules := makeLineProduction(line)
 		if len(lineRules) > 0 {
 			g.productions[sym] = append(g.productions[sym], lineRules...)
 		}
@@ -53,7 +53,7 @@ func (g *G) makeProductions() map[Symbol][]*Production {
 	return g.productions
 }
 
-func (g *G) makeLineProduction(line string) (lhs Symbol, productions []*Production) {
+func makeLineProduction(line string) (lhs Symbol, productions []*Production) {
 	items := strings.Split(line, productionS)
 	if len(items) <= 1 {
 		return

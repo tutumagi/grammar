@@ -1,110 +1,92 @@
 package grammar
 
 import (
+	"encoding/json"
+	"io/fs"
+	"io/ioutil"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-var testData = `
-E   -> T E'
-E'  -> + T E' | e
-T   -> F T'
-T'  -> * F T' | e
-F   -> ( E ) | id
-`
-
-func TestMakeRules(t *testing.T) {
-	expectProductions := map[Symbol][]*Production{
-		"E": {
-			newProduction("E").RHS("T", "E'"),
-		},
-		"E'": {
-			newProduction("E'").RHS("+", "T", "E'"),
-			newProduction("E'").RHS("e"),
-		},
-		"T": {
-			newProduction("T").RHS("F", "T'"),
-		},
-		"T'": {
-			newProduction("T'").RHS("*", "F", "T'"),
-			newProduction("T'").RHS("e"),
-		},
-		"F": {
-			newProduction("F").RHS("(", "E", ")"),
-			newProduction("F").RHS("id"),
-		},
-	}
-
-	g := NewGrammar(testData)
-	productions := g.makeProductions()
-	assert.Equal(t, expectProductions, productions)
-
-	g.makeFirstSet()
-	expectFirstSet := map[Symbol]SymbolSet{
-		"E":  newSymbolSet("(", "id"),
-		"E'": newSymbolSet("+", epsilonS),
-		"T":  newSymbolSet("(", "id"),
-		"T'": newSymbolSet("*", epsilonS),
-		"F":  newSymbolSet("(", "id"),
-	}
-
-	for sym, expectFS := range expectFirstSet {
-		assert.Equal(t, g.firstSet[sym], expectFS)
-	}
-
-	// spew.Dump(g.firstSet)
+type TestData struct {
+	Source []string    `json:"source"`
+	Expect *ExpectData `json:"expect"`
 }
 
-var testData2 = `
-S -> a B D h
-B -> c C
-C -> b C | e
-D -> E F
-E -> g | e
-F -> f | e
-`
+type ExpectData struct {
+	Production map[Symbol][]*Production `json:"production"`
+	FirstSet   map[Symbol]SymbolSet     `json:"first_set"`
+	FollowSet  map[Symbol]SymbolSet     `json:"follow_set"`
+}
 
-func TestMakeFirst(t *testing.T) {
-	expectProductions := map[Symbol][]*Production{
-		"S": {
-			newProduction("S").RHS("a", "B", "D", "h"),
-		},
-		"B": {
-			newProduction("B").RHS("c", "C"),
-		},
-		"C": {
-			newProduction("C").RHS("b", "C"),
-			newProduction("C").RHS("e"),
-		},
-		"D": {
-			newProduction("D").RHS("E", "F"),
-		},
-		"E": {
-			newProduction("E").RHS("g"),
-			newProduction("E").RHS("e"),
-		},
-		"F": {
-			newProduction("F").RHS("f"),
-			newProduction("F").RHS("e"),
-		},
+func (a *ExpectData) UnmarshalJSON(bb []byte) error {
+	type mockExpectData struct {
+		Production []string `json:"production"`
+		FirstSet   []string `json:"first_set"`
+		FollowSet  []string `json:"follow_set"`
+	}
+	mockData := &mockExpectData{}
+	err := json.Unmarshal(bb, mockData)
+	if err != nil {
+		return err
 	}
 
-	g := NewGrammar(testData2)
-	productions := g.makeProductions()
-	assert.Equal(t, expectProductions, productions)
-
-	g.makeFirstSet()
-	expectFirstSet := map[Symbol]SymbolSet{
-		"S": newSymbolSet("a"),
-		"B": newSymbolSet("c"),
-		"C": newSymbolSet("b", "e"),
-		"D": newSymbolSet("g", "f", "e"),
-		"E": newSymbolSet("g", "e"),
-		"F": newSymbolSet("f", "e"),
+	a.Production = make(map[Symbol][]*Production)
+	for _, line := range mockData.Production {
+		lhs, productions := makeLineProduction(line)
+		a.Production[lhs] = append(a.Production[lhs], productions...)
+	}
+	a.FirstSet = make(map[Symbol]SymbolSet)
+	for _, line := range mockData.FirstSet {
+		items := strings.Split(line, "=")
+		a.FirstSet[strings.TrimSpace(items[0])] = newSymbolSet(strings.Split(strings.TrimSpace(items[1]), " ")...)
+	}
+	a.FollowSet = make(map[Symbol]SymbolSet)
+	for _, line := range mockData.FollowSet {
+		items := strings.Split(line, "=")
+		a.FollowSet[strings.TrimSpace(items[0])] = newSymbolSet(strings.Split(strings.TrimSpace(items[1]), " ")...)
 	}
 
-	for sym, expectFS := range expectFirstSet {
-		assert.Equal(t, g.firstSet[sym], expectFS)
+	return nil
+}
+
+func TestMakeFirstFollow(t *testing.T) {
+	expectdatas := readTestData()
+
+	for _, testData := range expectdatas {
+		g := NewGrammar(strings.Join(testData.Source, "\n"))
+		productions := g.makeProductions()
+		assert.Equal(t, testData.Expect.Production, productions)
+
+		g.makeFirstSet()
+		assert.Equal(t, testData.Expect.FirstSet, g.firstSet)
 	}
+}
+
+func readTestData() []*TestData {
+	expectdatas := []*TestData{}
+
+	err := filepath.WalkDir("./testdata", func(path string, d fs.DirEntry, err error) error {
+		if !d.IsDir() {
+			bb, err := ioutil.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			tmp := &TestData{}
+			err = json.Unmarshal(bb, tmp)
+			if err != nil {
+				return err
+			}
+			expectdatas = append(expectdatas, tmp)
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		panic(err)
+	}
+	return expectdatas
 }

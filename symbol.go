@@ -5,7 +5,7 @@ type Symbol = string
 // nonterminal is UpperCase
 // terminal is lowercase
 const (
-	epsilonS        = "e"
+	epsilonS        = "e" // ε
 	rightEndMarkerS = "$"
 	productionS     = "->"
 	alternateS      = "|"

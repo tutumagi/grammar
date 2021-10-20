@@ -1,0 +1,39 @@
+{
+  "source": [
+    "S -> a B D h",
+    "B -> c C",
+    "C -> b C | e",
+    "D -> E F",
+    "E -> g | e",
+    "F -> f | e"
+  ],
+  "expect": {
+    "production": [
+      "S -> a B D h",
+      "B -> c C",
+      "C -> b C",
+      "C -> e",
+      "D -> E F",
+      "E -> g",
+      "E -> e",
+      "F -> f",
+      "F -> e"
+    ],
+    "first_set": [
+      "S = a",
+      "B = c",
+      "C = b e",
+      "D = g f e",
+      "E = g e",
+      "F = f e"
+    ],
+    "follow_set": [
+      "S = $",
+      "B = g f h",
+      "C = g f h",
+      "D = h",
+      "E = f h",
+      "F = h"
+    ]
+  }
+}
