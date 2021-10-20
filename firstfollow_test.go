@@ -60,8 +60,7 @@ func TestMakeFirstFollow(t *testing.T) {
 	for _, testData := range expectdatas {
 		t.Run(testData.Filename, func(t *testing.T) {
 			g := NewGrammar(strings.Join(testData.Source, "\n"))
-			productions := g.makeProductions()
-			assert.Equal(t, testData.Expect.Production, productions)
+			assert.Equal(t, testData.Expect.Production, g.productions)
 
 			g.makeFirstSet()
 			assert.Equal(t, testData.Expect.FirstSet, g.firstSet)
