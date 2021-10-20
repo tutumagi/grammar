@@ -85,11 +85,11 @@ func (g *G) makeFirstSet() {
 	g.firstSet = make(FirstSet)
 
 	for sym := range g.productions {
-		g.firstSet[sym] = g.firstSetByProductions(sym)
+		g.firstSet[sym] = g.symbolFirstSet(sym)
 	}
 }
 
-func (g *G) firstSetByProductions(sym Symbol) SymbolSet {
+func (g *G) symbolFirstSet(sym Symbol) SymbolSet {
 	set := make(SymbolSet)
 	for _, production := range g.productions[sym] {
 		set.union(g.rhsFirstSet(production.rhs...))
@@ -102,14 +102,19 @@ func (g *G) rhsFirstSet(symbols ...Symbol) (set SymbolSet) {
 	head := symbols[0]
 	rest := symbols[1:]
 	if isNonTerminal(head) {
-		headSet := g.firstSetByProductions(head)
+		// 如果是 nonterminal
+		headSet := g.symbolFirstSet(head)
 		set.union(headSet)
 		if len(rest) > 0 {
+			// FirstSet(head) 包含 ε，则结果为 FirstSet(head) - ε + FirstSet(rest)
 			if headSet.contain(epsilonS) {
+				set.remove(epsilonS)
 				set.union(g.rhsFirstSet(rest...))
 			}
+			// FirstSet(head) 不包含 ε，则结果就是 FirstSet(head)
 		}
 	} else {
+		// 如果是 ε 或者 terminal，则直接加入到 FirstSet
 		set.add(head)
 	}
 	return
