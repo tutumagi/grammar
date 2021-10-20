@@ -5,5 +5,9 @@ study programming language grammar.(For the parser theory)
 * [ ] FollowSet
 * [ ] LL(1) Parsing Table
 
+### Note
+1. epsilon is `ε`, unicode is `'\u03B5'`
+2. endmarker is `$`
+
 ### Ref
 * [FirstFollow](https://www.cs.uaf.edu/~cs331/notes/FirstFollow.pdf)

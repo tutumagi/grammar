@@ -1,29 +1,29 @@
 {
-    "source": [
-      "E   -> T E'",
-      "E'  -> + T E' | e",
-      "T   -> F T'",
-      "T'  -> * F T' | e",
-      "F   -> ( E ) | id"
+  "source": [
+    "E   -> T E'",
+    "E'  -> + T E' | ε",
+    "T   -> F T'",
+    "T'  -> * F T' | ε",
+    "F   -> ( E ) | id"
+  ],
+  "expect": {
+    "production": [
+      "E     -> T E'",
+      "E'    -> + T E'",
+      "E'    -> ε",
+      "T     -> F T'",
+      "T'    -> * F T'",
+      "T'    -> ε",
+      "F     -> ( E )",
+      "F     -> id"
     ],
-    "expect": {
-      "production": [
-        "E     -> T E'",
-        "E'    -> + T E'",
-        "E'    -> e",
-        "T     -> F T'",
-        "T'    -> * F T'",
-        "T'    -> e",
-        "F     -> ( E )",
-        "F     -> id"
-      ],
-      "first_set": [
-        "E = ( id",
-        "E' = + e",
-        "T = ( id",
-        "T' = * e",
-        "F = ( id"
-      ],
-      "follow_set": null
-    }
+    "first_set": [
+      "E = ( id",
+      "E' = + ε",
+      "T = ( id",
+      "T' = * ε",
+      "F = ( id"
+    ],
+    "follow_set": null
   }
+}
