@@ -50,3 +50,16 @@ func (set SymbolSet) union(other SymbolSet) SymbolSet {
 	}
 	return set
 }
+func (set SymbolSet) intersect(other SymbolSet) SymbolSet {
+	result := make(SymbolSet)
+	for m := range other {
+		if set.contain(m) {
+			result.add(m)
+		}
+	}
+	return result
+}
+
+func (set SymbolSet) disjoint(other SymbolSet) bool {
+	return len(set.intersect(other)) == 0
+}

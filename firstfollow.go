@@ -9,23 +9,8 @@ type G struct {
 
 	firstSet  map[Symbol]SymbolSet
 	followSet map[Symbol]SymbolSet
-}
 
-type Production struct {
-	lhs Symbol
-	rhs []Symbol
-}
-
-func newProduction(lhs Symbol) *Production {
-	return &Production{
-		lhs: lhs,
-		rhs: make([]Symbol, 0),
-	}
-}
-
-func (p *Production) RHS(sym ...Symbol) *Production {
-	p.rhs = sym
-	return p
+	firstSetDetail map[Symbol]*FirstSetDetail
 }
 
 func NewGrammar(source string) *G {
@@ -33,51 +18,10 @@ func NewGrammar(source string) *G {
 		source: source,
 	}
 	g.start, g.productions = makeProductions(source)
+
+	g.firstSetDetail = make(map[string]*FirstSetDetail)
 	return g
 }
-
-// func (g *G) makeProductions() map[Symbol][]*Production {
-// 	lines := strings.Split(g.source, "\n")
-// 	g.productions = make(map[Symbol][]*Production, len(lines))
-// 	for _, line := range lines {
-// 		sym, lineRules := makeLineProduction(line)
-// 		if g.start == "" {
-// 			g.start = sym // start rule
-// 		}
-// 		if len(lineRules) > 0 {
-// 			g.productions[sym] = append(g.productions[sym], lineRules...)
-// 		}
-// 	}
-// 	return g.productions
-// }
-
-// func makeLineProduction(line string) (lhs Symbol, productions []*Production) {
-// 	items := strings.Split(line, productionS)
-// 	if len(items) <= 1 {
-// 		return
-// 	}
-// 	prod := &Production{}
-// 	// 拿到这一行的 LHS 和 RHS
-// 	for i := 0; i < len(items); i++ {
-// 		item := strings.TrimSpace(items[i])
-// 		if i == 0 {
-// 			// 拿到 LHS
-// 			lhs = item
-// 			prod.lhs = item
-// 		} else {
-// 			// 拿到 RHS，可能会有多个 production，通过 `alternateS` 符号分割
-// 			mulipleRules := strings.Split(item, alternateS)
-// 			for _, rule := range mulipleRules {
-// 				// 每个 production 的符号集合
-// 				// 每个符号之间用空格隔开，比如 S -> A B C d
-// 				symbols := strings.Split(strings.TrimSpace(rule), " ")
-
-// 				productions = append(productions, newProduction(lhs).RHS(symbols...))
-// 			}
-// 		}
-// 	}
-// 	return
-// }
 
 func (g *G) makeFirstSet() {
 	g.firstSet = make(map[Symbol]SymbolSet)
@@ -93,7 +37,13 @@ func (g *G) nonterminalFirstSet(sym Symbol) SymbolSet {
 	}
 	set := make(SymbolSet)
 	for _, production := range g.productions[sym] {
-		set.union(g.rhsFirstSet(production.rhs...))
+		theFirstSet := g.rhsFirstSet(production.rhs...)
+		if _, ok := g.firstSetDetail[sym]; !ok {
+			g.firstSetDetail[sym] = newFirstSetDetail(sym)
+		}
+		g.firstSetDetail[sym].addDetail(production, theFirstSet)
+
+		set.union(theFirstSet)
 	}
 	return set
 }

@@ -1,6 +1,30 @@
 package grammar
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
+
+type Production struct {
+	lhs Symbol
+	rhs []Symbol
+}
+
+func newProduction(lhs Symbol) *Production {
+	return &Production{
+		lhs: lhs,
+		rhs: make([]Symbol, 0),
+	}
+}
+
+func (p *Production) RHS(sym ...Symbol) *Production {
+	p.rhs = sym
+	return p
+}
+
+func (p *Production) String() string {
+	return fmt.Sprintf("%s -> %v", p.lhs, p.rhs)
+}
 
 func makeProductions(source string) (start Symbol, productions map[Symbol][]*Production) {
 	lines := strings.Split(source, "\n")
