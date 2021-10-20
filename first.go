@@ -104,8 +104,10 @@ func (g *G) rhsFirstSet(symbols ...Symbol) (set SymbolSet) {
 	if isNonTerminal(head) {
 		headSet := g.firstSetByProductions(head)
 		set.union(headSet)
-		if headSet.contain(epsilonS) {
-			set.union(g.rhsFirstSet(rest...))
+		if len(rest) > 0 {
+			if headSet.contain(epsilonS) {
+				set.union(g.rhsFirstSet(rest...))
+			}
 		}
 	} else {
 		set.add(head)

@@ -56,6 +56,55 @@ func TestMakeRules(t *testing.T) {
 	// spew.Dump(g.firstSet)
 }
 
-func TestMakeFirst(t *testing.T) {
+var testData2 = `
+S -> a B D h
+B -> c C
+C -> b C | e
+D -> E F
+E -> g | e
+F -> f | e
+`
 
+func TestMakeFirst(t *testing.T) {
+	expectProductions := map[Symbol][]*Production{
+		"S": {
+			newProduction("S").RHS("a", "B", "D", "h"),
+		},
+		"B": {
+			newProduction("B").RHS("c", "C"),
+		},
+		"C": {
+			newProduction("C").RHS("b", "C"),
+			newProduction("C").RHS("e"),
+		},
+		"D": {
+			newProduction("D").RHS("E", "F"),
+		},
+		"E": {
+			newProduction("E").RHS("g"),
+			newProduction("E").RHS("e"),
+		},
+		"F": {
+			newProduction("F").RHS("f"),
+			newProduction("F").RHS("e"),
+		},
+	}
+
+	g := NewGrammar(testData2)
+	productions := g.makeProductions()
+	assert.Equal(t, expectProductions, productions)
+
+	g.makeFirstSet()
+	expectFirstSet := map[Symbol]SymbolSet{
+		"S": newSymbolSet("a"),
+		"B": newSymbolSet("c"),
+		"C": newSymbolSet("b", "e"),
+		"D": newSymbolSet("g", "f", "e"),
+		"E": newSymbolSet("g", "e"),
+		"F": newSymbolSet("f", "e"),
+	}
+
+	for sym, expectFS := range expectFirstSet {
+		assert.Equal(t, g.firstSet[sym], expectFS)
+	}
 }
