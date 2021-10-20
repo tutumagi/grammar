@@ -16,12 +16,12 @@ func isEpsilon(sym Symbol) bool {
 }
 
 func isTerminal(sym Symbol) bool {
-	c := sym[0]
-	return !(c >= 'A' && c <= 'Z')
+	return !(isEpsilon(sym) || isNonTerminal(sym))
 }
 
 func isNonTerminal(sym Symbol) bool {
-	return !(isEpsilon(sym) || isTerminal(sym))
+	c := sym[0]
+	return (c >= 'A' && c <= 'Z')
 }
 
 type SymbolSet map[Symbol]struct{}
@@ -62,6 +62,14 @@ func (set SymbolSet) intersect(other SymbolSet) SymbolSet {
 
 func (set SymbolSet) disjoint(other SymbolSet) bool {
 	return len(set.intersect(other)) == 0
+}
+
+func (set SymbolSet) toList() []Symbol {
+	ret := make([]Symbol, 0, len(set))
+	for s := range set {
+		ret = append(ret, s)
+	}
+	return ret
 }
 
 const (

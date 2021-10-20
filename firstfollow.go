@@ -7,8 +7,9 @@ type G struct {
 
 	productions map[Symbol][]*Production
 
-	firstSet  map[Symbol]SymbolSet
-	followSet map[Symbol]SymbolSet
+	firstSet     map[Symbol]SymbolSet
+	followSet    map[Symbol]SymbolSet
+	predictTable *PredictTable
 
 	firstSetDetail map[Symbol]*FirstSetDetail
 }
@@ -20,6 +21,7 @@ func NewGrammar(source string) *G {
 	g.start, g.productions = makeProductions(source)
 
 	g.firstSetDetail = make(map[string]*FirstSetDetail)
+
 	return g
 }
 
@@ -122,4 +124,39 @@ func (g *G) symbolFollowSet(sym Symbol) SymbolSet {
 	}
 
 	return followB
+}
+
+func (g *G) makePredict() {
+	g.predictTable = newPredictTable(g.terminalsAndNonterminals())
+	for nonterminal, fsd := range g.firstSetDetail {
+		for production, firstSet := range fsd.detail {
+			for terminal := range firstSet {
+				g.predictTable.add(nonterminal, terminal, production)
+			}
+		}
+	}
+}
+
+func (g *G) terminalsAndNonterminals() (terminals []Symbol, nonterminals []Symbol) {
+	terminalSet := newSymbolSet()
+	nonterminalSet := newSymbolSet()
+
+	add := func(sym ...Symbol) {
+		for _, s := range sym {
+			if isTerminal(s) {
+				terminalSet.add(s)
+			} else if isNonTerminal(s) {
+				nonterminalSet.add(s)
+			}
+		}
+	}
+
+	for sym, productions := range g.productions {
+		add(sym)
+		for _, production := range productions {
+			add(sym, production.lhs)
+			add(production.rhs...)
+		}
+	}
+	return terminalSet.toList(), nonterminalSet.toList()
 }
