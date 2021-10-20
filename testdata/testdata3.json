@@ -1,0 +1,27 @@
+{
+  "source": [
+    "X   -> A B b c | d e",
+    "A   -> a | ε",
+    "B   -> b | ε"
+  ],
+  "expect": {
+    "production": [
+      "X -> A B b c",
+      "X -> d e",
+      "A -> a",
+      "A -> ε",
+      "B -> b",
+      "B -> ε"
+    ],
+    "first_set": [
+      "A = a ε",
+      "B = b ε",
+      "X = a b d"
+    ],
+    "follow_set": [
+      "A = b",
+      "B = b",
+      "X = $"
+    ]
+  }
+}
