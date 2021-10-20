@@ -4,11 +4,6 @@ import (
 	"strings"
 )
 
-type (
-	FirstSet  = map[Symbol]SymbolSet
-	FollowSet = map[Symbol]SymbolSet
-)
-
 type G struct {
 	source string
 
@@ -16,8 +11,8 @@ type G struct {
 
 	productions map[Symbol][]*Production
 
-	firstSet  FirstSet
-	followSet FollowSet
+	firstSet  map[Symbol]SymbolSet
+	followSet map[Symbol]SymbolSet
 }
 
 type Production struct {
@@ -87,7 +82,7 @@ func makeLineProduction(line string) (lhs Symbol, productions []*Production) {
 }
 
 func (g *G) makeFirstSet() {
-	g.firstSet = make(FirstSet)
+	g.firstSet = make(map[Symbol]SymbolSet)
 
 	for sym := range g.productions {
 		g.firstSet[sym] = g.nonterminalFirstSet(sym)
@@ -129,7 +124,7 @@ func (g *G) rhsFirstSet(symbols ...Symbol) SymbolSet {
 }
 
 func (g *G) makeFollowSet() {
-	g.followSet = make(FollowSet)
+	g.followSet = make(map[Symbol]SymbolSet)
 
 	for sym := range g.productions {
 		if isNonTerminal(sym) {
