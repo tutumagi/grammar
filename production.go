@@ -26,7 +26,16 @@ func (p *Production) String() string {
 	if p == nil {
 		return ""
 	}
-	return fmt.Sprintf("%s -> %v", p.lhs, p.rhs)
+	sb := strings.Builder{}
+	space := " "
+	for i, s := range p.rhs {
+		if i == len(p.rhs)-1 {
+			space = ""
+		}
+		sb.WriteString(s + space)
+	}
+
+	return fmt.Sprintf("%s -> {%s}", p.lhs, sb.String())
 }
 
 func makeProductions(source string) (start Symbol, productions []*Production) {

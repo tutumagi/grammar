@@ -25,6 +25,14 @@ func NewGrammar(source string) *G {
 	return g
 }
 
+func (g *G) MakeFirstFollowPredict() (firstSet map[Symbol]SymbolSet, followSet map[Symbol]SymbolSet, predict *PredictTable) {
+	g.makeFirstSet()
+	g.makeFollowSet()
+	g.makePredict()
+
+	return g.firstSet, g.followSet, g.predictTable
+}
+
 func (g *G) makeFirstSet() {
 	g.firstSet = make(map[Symbol]SymbolSet)
 

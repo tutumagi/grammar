@@ -1,5 +1,7 @@
 package grammar
 
+import "strings"
+
 type Symbol = string
 
 // nonterminal is UpperCase
@@ -30,6 +32,22 @@ func newSymbolSet(syms ...Symbol) SymbolSet {
 	s := make(SymbolSet)
 	s.add(syms...)
 	return s
+}
+
+func (set SymbolSet) String() string {
+	sb := strings.Builder{}
+	sb.WriteString("{")
+	i := 0
+	space := " "
+	for s := range set {
+		if i == len(set)-1 {
+			space = ""
+		}
+		sb.WriteString(s + space)
+		i++
+	}
+	sb.WriteString("}")
+	return sb.String()
 }
 
 func (set SymbolSet) add(ss ...Symbol) SymbolSet {
