@@ -25,7 +25,11 @@ func NewGrammar(source string) *G {
 	return g
 }
 
-func (g *G) MakeFirstFollowPredict() (firstSet map[Symbol]SymbolSet, followSet map[Symbol]SymbolSet, predict *PredictTable) {
+func (g *G) MakeFirstFollowPredict() (
+	firstSet map[Symbol]SymbolSet,
+	followSet map[Symbol]SymbolSet,
+	predict *PredictTable,
+) {
 	g.makeFirstSet()
 	g.makeFollowSet()
 	g.makePredict()
@@ -100,12 +104,12 @@ func (g *G) makeFollowSet() {
 	for _, production := range g.productions {
 		lhs := production.lhs
 		if isNonTerminal(lhs) {
-			g.followSet[lhs] = g.symbolFollowSet(lhs)
+			g.followSet[lhs] = g.nonterminalFollowSet(lhs)
 		}
 	}
 }
 
-func (g *G) symbolFollowSet(sym Symbol) SymbolSet {
+func (g *G) nonterminalFollowSet(sym Symbol) SymbolSet {
 	if set, ok := g.followSet[sym]; ok {
 		return set
 	}
@@ -130,7 +134,7 @@ func (g *G) symbolFollowSet(sym Symbol) SymbolSet {
 			if betaFirst.contain(epsilonS) {
 				// 如果First(β)包含ε 则Follow(B) = First(β) - ε + Follow(X)
 				followB.remove(epsilonS)
-				followB.union(g.symbolFollowSet(production.lhs))
+				followB.union(g.nonterminalFollowSet(production.lhs))
 			}
 		} else {
 			// fix infinite recursion
@@ -138,7 +142,7 @@ func (g *G) symbolFollowSet(sym Symbol) SymbolSet {
 				// 规则3
 				// 如果产生式如下形式：X -> ɑB
 				// 则 Follow(X) 包含在 Follow(B)当中
-				followB.union(g.symbolFollowSet(production.lhs))
+				followB.union(g.nonterminalFollowSet(production.lhs))
 			}
 		}
 	}
@@ -186,7 +190,7 @@ func (g *G) terminalsAndNonterminals() (terminals []Symbol, nonterminals []Symbo
 		}
 	}
 
-	// tow loop for the order of nonterminal in the left hand side
+	// two loop for the order of nonterminal in the left hand side
 	for _, production := range g.productions {
 		add(production.lhs)
 	}
