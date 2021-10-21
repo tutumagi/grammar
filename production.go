@@ -29,16 +29,16 @@ func (p *Production) String() string {
 	return fmt.Sprintf("%s -> %v", p.lhs, p.rhs)
 }
 
-func makeProductions(source string) (start Symbol, productions map[Symbol][]*Production) {
+func makeProductions(source string) (start Symbol, productions []*Production) {
 	lines := strings.Split(source, "\n")
-	productions = make(map[Symbol][]*Production, len(lines))
+	productions = make([]*Production, 0, len(lines))
 	for _, line := range lines {
 		sym, lineRules := makeLineProduction(line)
 		if start == "" {
 			start = sym // start rule
 		}
 		if len(lineRules) > 0 {
-			productions[sym] = append(productions[sym], lineRules...)
+			productions = append(productions, lineRules...)
 		}
 	}
 	return

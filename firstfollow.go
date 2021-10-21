@@ -5,7 +5,7 @@ type G struct {
 
 	start Symbol // start rule
 
-	productions map[Symbol][]*Production
+	productions []*Production
 
 	firstSet     map[Symbol]SymbolSet
 	followSet    map[Symbol]SymbolSet
@@ -28,17 +28,30 @@ func NewGrammar(source string) *G {
 func (g *G) makeFirstSet() {
 	g.firstSet = make(map[Symbol]SymbolSet)
 
-	for sym := range g.productions {
-		g.firstSet[sym] = g.nonterminalFirstSet(sym)
+	for _, production := range g.productions {
+		lhs := production.lhs
+		g.firstSet[lhs] = g.nonterminalFirstSet(lhs)
 	}
+}
+
+func (g *G) productionsByNonterminal(sym Symbol) []*Production {
+	result := make([]*Production, 0, len(g.productions))
+	for _, production := range g.productions {
+		if production.lhs == sym {
+			result = append(result, production)
+		}
+	}
+	return result
 }
 
 func (g *G) nonterminalFirstSet(sym Symbol) SymbolSet {
 	if set, ok := g.firstSet[sym]; ok {
 		return set
 	}
+	productions := g.productionsByNonterminal(sym)
+
 	set := make(SymbolSet)
-	for _, production := range g.productions[sym] {
+	for _, production := range productions {
 		theFirstSet := g.rhsFirstSet(production.rhs...)
 		if _, ok := g.firstSetDetail[sym]; !ok {
 			g.firstSetDetail[sym] = newFirstSetDetail(sym)
@@ -76,9 +89,10 @@ func (g *G) rhsFirstSet(symbols ...Symbol) SymbolSet {
 func (g *G) makeFollowSet() {
 	g.followSet = make(map[Symbol]SymbolSet)
 
-	for sym := range g.productions {
-		if isNonTerminal(sym) {
-			g.followSet[sym] = g.symbolFollowSet(sym)
+	for _, production := range g.productions {
+		lhs := production.lhs
+		if isNonTerminal(lhs) {
+			g.followSet[lhs] = g.symbolFollowSet(lhs)
 		}
 	}
 }
@@ -93,32 +107,30 @@ func (g *G) symbolFollowSet(sym Symbol) SymbolSet {
 	if sym == g.start {
 		followB.add(rightEndMarkerS)
 	}
-	for _, productions := range g.productions {
-		for _, production := range productions {
-			ret := indexOfSymbolList(sym, production.rhs)
-			if ret == NotFound {
-				continue
+	for _, production := range g.productions {
+		ret := indexOfSymbolList(sym, production.rhs)
+		if ret == NotFound {
+			continue
+		}
+		beta := production.rhs[ret+1:]
+		if len(beta) > 0 {
+			// 规则2
+			// 如果产生式如下形式：X -> ɑBβ，则先计算 First(β)
+			betaFirst := g.rhsFirstSet(beta...)
+			// 如果First(β)不包含ε 则Follow(B) = First(β)
+			followB.union(betaFirst)
+			if betaFirst.contain(epsilonS) {
+				// 如果First(β)包含ε 则Follow(B) = First(β) - ε + Follow(X)
+				followB.remove(epsilonS)
+				followB.union(g.symbolFollowSet(production.lhs))
 			}
-			beta := production.rhs[ret+1:]
-			if len(beta) > 0 {
-				// 规则2
-				// 如果产生式如下形式：X -> ɑBβ，则先计算 First(β)
-				betaFirst := g.rhsFirstSet(beta...)
-				// 如果First(β)不包含ε 则Follow(B) = First(β)
-				followB.union(betaFirst)
-				if betaFirst.contain(epsilonS) {
-					// 如果First(β)包含ε 则Follow(B) = First(β) - ε + Follow(X)
-					followB.remove(epsilonS)
-					followB.union(g.symbolFollowSet(production.lhs))
-				}
-			} else {
-				// fix infinite recursion
-				if production.lhs != sym {
-					// 规则3
-					// 如果产生式如下形式：X -> ɑB
-					// 则 Follow(X) 包含在 Follow(B)当中
-					followB.union(g.symbolFollowSet(production.lhs))
-				}
+		} else {
+			// fix infinite recursion
+			if production.lhs != sym {
+				// 规则3
+				// 如果产生式如下形式：X -> ɑB
+				// 则 Follow(X) 包含在 Follow(B)当中
+				followB.union(g.symbolFollowSet(production.lhs))
 			}
 		}
 	}
@@ -128,38 +140,50 @@ func (g *G) symbolFollowSet(sym Symbol) SymbolSet {
 
 func (g *G) makePredict() {
 	g.predictTable = newPredictTable(g.terminalsAndNonterminals())
-	for nonterminal, fsd := range g.firstSetDetail {
-		for production, firstSet := range fsd.detail {
-			for terminal := range firstSet {
-				// terminal in firstSet maybe is ε
-				if isTerminal(terminal) {
-					g.predictTable.add(nonterminal, terminal, production)
+
+	for _, production := range g.productions {
+		nonterminal := production.lhs
+		first_a := g.rhsFirstSet(production.rhs...)
+		for terminal_a := range first_a {
+			if terminal_a == epsilonS {
+				follow_s := g.followSet[nonterminal]
+				for terminal_b := range follow_s {
+					g.predictTable.add(nonterminal, terminal_b, production)
+					if terminal_b == rightEndMarkerS {
+						g.predictTable.add(nonterminal, rightEndMarkerS, production)
+					}
 				}
+			} else {
+				g.predictTable.add(nonterminal, terminal_a, production)
 			}
 		}
 	}
 }
 
 func (g *G) terminalsAndNonterminals() (terminals []Symbol, nonterminals []Symbol) {
-	terminalSet := newSymbolSet()
-	nonterminalSet := newSymbolSet()
+	terminals = make([]Symbol, 0, len(g.productions))
+	nonterminals = make([]Symbol, 0, len(g.productions))
 
 	add := func(sym ...Symbol) {
 		for _, s := range sym {
 			if isTerminal(s) {
-				terminalSet.add(s)
+				if indexOfSymbolList(s, terminals) == NotFound {
+					terminals = append(terminals, s)
+				}
 			} else if isNonTerminal(s) {
-				nonterminalSet.add(s)
+				if indexOfSymbolList(s, nonterminals) == NotFound {
+					nonterminals = append(nonterminals, s)
+				}
 			}
 		}
 	}
 
-	for sym, productions := range g.productions {
-		add(sym)
-		for _, production := range productions {
-			add(sym, production.lhs)
-			add(production.rhs...)
-		}
+	// tow loop for the order of nonterminal in the left hand side
+	for _, production := range g.productions {
+		add(production.lhs)
 	}
-	return terminalSet.toList(), nonterminalSet.toList()
+	for _, production := range g.productions {
+		add(production.rhs...)
+	}
+	return
 }

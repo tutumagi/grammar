@@ -18,9 +18,9 @@ type TestData struct {
 }
 
 type ExpectData struct {
-	Production map[Symbol][]*Production `json:"production"`
-	FirstSet   map[Symbol]SymbolSet     `json:"first_set"`
-	FollowSet  map[Symbol]SymbolSet     `json:"follow_set"`
+	Production []*Production        `json:"production"`
+	FirstSet   map[Symbol]SymbolSet `json:"first_set"`
+	FollowSet  map[Symbol]SymbolSet `json:"follow_set"`
 }
 
 func (a *ExpectData) UnmarshalJSON(bb []byte) error {
@@ -35,10 +35,10 @@ func (a *ExpectData) UnmarshalJSON(bb []byte) error {
 		return err
 	}
 
-	a.Production = make(map[Symbol][]*Production)
+	a.Production = make([]*Production, 0, len(mockData.Production))
 	for _, line := range mockData.Production {
-		lhs, productions := makeLineProduction(line)
-		a.Production[lhs] = append(a.Production[lhs], productions...)
+		_, productions := makeLineProduction(line)
+		a.Production = append(a.Production, productions...)
 	}
 	a.FirstSet = make(map[Symbol]SymbolSet)
 	for _, line := range mockData.FirstSet {

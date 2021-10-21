@@ -14,6 +14,9 @@ type PredictTable struct {
 
 func newPredictTable(terminals []Symbol, nonterminals []Symbol) *PredictTable {
 	terminals = SortSymbol(terminals)
+	if terminals[len(terminals)-1] != rightEndMarkerS {
+		terminals = append(terminals, rightEndMarkerS)
+	}
 	return &PredictTable{
 		terminals:   terminals,
 		nonterminal: nonterminals,
