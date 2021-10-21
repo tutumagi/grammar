@@ -1,4 +1,4 @@
-## Generate FIRST/FOLLOW/PRIDICT Set from BNF.(For the parser theory)
+## Generate FIRST/FOLLOW/PREDICT Set from BNF.
 
 ### Feature
 * [x] FirstSet generate. Output pretty.
