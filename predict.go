@@ -1,8 +1,9 @@
 package grammar
 
 import (
-	"fmt"
-	"strings"
+	"os"
+
+	"github.com/jedib0t/go-pretty/v6/table"
 )
 
 type PredictTable struct {
@@ -37,22 +38,47 @@ func (a *PredictTable) addContent(row int, col int, content *Production) {
 }
 
 func (a *PredictTable) dump() {
-	sb := &strings.Builder{}
+	// sb := &strings.Builder{}
+	// rowCount := len(a.nonterminal)
+	// colCount := len(a.terminals)
+	// // draw title
+	// sb.WriteString("     ")
+	// for _, terminal := range a.terminals {
+	// 	sb.WriteString(fmt.Sprintf("%20s", terminal))
+	// }
+	// sb.WriteString("\n")
+	// for r := 0; r < rowCount; r++ {
+	// 	sb.WriteString(fmt.Sprintf("%s    ", a.nonterminal[r]))
+	// 	for l := 0; l < colCount; l++ {
+	// 		sb.WriteString(fmt.Sprintf("%20s", a.contents[r*colCount+l].String()))
+	// 	}
+	// 	sb.WriteString("\n")
+	// }
+
+	// fmt.Print(sb.String())
+
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+
 	rowCount := len(a.nonterminal)
 	colCount := len(a.terminals)
 	// draw title
-	sb.WriteString("     ")
+	header := table.Row{"#"}
 	for _, terminal := range a.terminals {
-		sb.WriteString(fmt.Sprintf("%20s", terminal))
+		header = append(header, terminal)
 	}
-	sb.WriteString("\n")
-	for r := 0; r < rowCount; r++ {
-		sb.WriteString(fmt.Sprintf("%s    ", a.nonterminal[r]))
-		for l := 0; l < colCount; l++ {
-			sb.WriteString(fmt.Sprintf("%20s", a.contents[r*colCount+l].String()))
-		}
-		sb.WriteString("\n")
-	}
+	t.AppendHeader(header)
 
-	fmt.Print(sb.String())
+	for r := 0; r < rowCount; r++ {
+		row := table.Row{a.nonterminal[r]}
+		for l := 0; l < colCount; l++ {
+			row = append(row, a.contents[r*colCount+l].String())
+		}
+		t.AppendRow(row)
+		t.AppendSeparator()
+	}
+	t.Render()
+
+	// fmt.Print(sb.String())
+
 }
