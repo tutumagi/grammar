@@ -78,7 +78,4 @@ func (a *PredictTable) dump() {
 		t.AppendSeparator()
 	}
 	t.Render()
-
-	// fmt.Print(sb.String())
-
 }

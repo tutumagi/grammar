@@ -32,13 +32,15 @@ func newSymbolSet(syms ...Symbol) SymbolSet {
 	return s
 }
 
-func (set SymbolSet) add(ss ...Symbol) {
+func (set SymbolSet) add(ss ...Symbol) SymbolSet {
 	for _, s := range ss {
 		set[s] = struct{}{}
 	}
+	return set
 }
-func (set SymbolSet) remove(s Symbol) {
+func (set SymbolSet) remove(s Symbol) SymbolSet {
 	delete(set, s)
+	return set
 }
 func (set SymbolSet) contain(s Symbol) bool {
 	_, ok := set[s]
