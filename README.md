@@ -1,4 +1,5 @@
 ## Generate FIRST/FOLLOW/PREDICT Set from BNF.
+We can use it to study parser theory.
 
 ### Feature
 * [x] FirstSet generate. Output pretty.
@@ -6,7 +7,13 @@
 * [x] LL(1) Predicate Parsing Table. Output pretty.
 
 ### Usage
-#### You can use demo input `cd cmd && go run main.go`
+#### You can use demo input to generate FirstSet/FollowSet/PredictTable
+
+```sh
+cd cmd
+go run main.go
+```
+
 <details>
   <summary>Output to the terminal default</summary>
 
@@ -46,7 +53,11 @@ PredictTable:
    ```
 </details>
 
-#### Or use your own bnf grammar. `cd cmd && go run main.go -grammar your_own_grammar_file`
+#### Or use your own bnf grammar. 
+```
+cd cmd
+go run main.go -grammar your_own_grammar_file
+```
 
 ### Note
 1. use `ε` indicate `EPSILON` (unicode is `'\u03B5'`)
