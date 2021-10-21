@@ -67,6 +67,9 @@ func TestMakeFirstFollow(t *testing.T) {
 
 			g.makeFollowSet()
 			assert.Equal(t, testData.Expect.FollowSet, g.followSet)
+
+			g.makePredict()
+			g.predictTable.dump()
 		})
 	}
 }

@@ -10,7 +10,7 @@ func TestPredictTable(t *testing.T) {
 	terminals := []string{"a", "c", "b", "$", "e", "z", "f"}
 	nonTerminals := []string{"S", "A", "B", "E"}
 
-	predictTable := newPredictTable(nonTerminals, terminals)
+	predictTable := newPredictTable(terminals, nonTerminals)
 
 	expectTerminals := []string{"a", "b", "c", "e", "f", "z", "$"}
 	expectNonTerminals := []string{"S", "A", "B", "E"}

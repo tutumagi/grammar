@@ -23,6 +23,9 @@ func (p *Production) RHS(sym ...Symbol) *Production {
 }
 
 func (p *Production) String() string {
+	if p == nil {
+		return ""
+	}
 	return fmt.Sprintf("%s -> %v", p.lhs, p.rhs)
 }
 

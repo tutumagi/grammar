@@ -131,7 +131,10 @@ func (g *G) makePredict() {
 	for nonterminal, fsd := range g.firstSetDetail {
 		for production, firstSet := range fsd.detail {
 			for terminal := range firstSet {
-				g.predictTable.add(nonterminal, terminal, production)
+				// terminal in firstSet maybe is ε
+				if isTerminal(terminal) {
+					g.predictTable.add(nonterminal, terminal, production)
+				}
 			}
 		}
 	}
