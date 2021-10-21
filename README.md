@@ -63,7 +63,7 @@ go run main.go -grammar your_own_grammar_file
 1. use `ε` indicate `EPSILON` (unicode is `'\u03B5'`)
 2. use `$` indicate `input right end marker`.
 3. use **UpperCase letter** indicate `Nonterminal`
-4. use **lowerCase letter **indicate `Terminal`
+4. use **lowerCase letter** indicate `Terminal`
 5. `BNF` format with `|` support alternate.
 6. use `->` distinguish `LHS` and `RHS`
 
