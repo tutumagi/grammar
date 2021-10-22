@@ -2,9 +2,9 @@
 We can use it to study parser theory.
 
 ### Feature
-* [x] FirstSet generate. Output pretty.
-* [x] FollowSet generate. Output pretty.
-* [x] LL(1) Predicate Parsing Table. Output pretty.
+* [x] FirstSet generate.
+* [x] FollowSet generate.
+* [x] LL(1) Predicate Parsing Table generate.
 
 ### Usage
 #### You can use demo input to generate FirstSet/FollowSet/PredictTable
