@@ -1,5 +1,5 @@
 ## Generate FIRST/FOLLOW/PREDICT Set from BNF.
-We can use it to study parser theory.
+We can use it to study parser theory. The generate [rule](./rule.md) is from [<Language Implementation Patterns>](https://pragprog.com/titles/tpdsl/language-implementation-patterns/)
 
 ### Feature
 * [x] FirstSet generate.
