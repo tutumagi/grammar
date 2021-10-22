@@ -1,5 +1,6 @@
 ## Generate FIRST/FOLLOW/PREDICT Set from BNF.
-We can use it to study parser theory. The generate [rule](./rule.md) is from [\<Language Implementation Patterns\>](https://pragprog.com/titles/tpdsl/language-implementation-patterns/)
+We can use it to study parser theory. The generate [rule](#rule) is from [\<Language Implementation Patterns\>](https://pragprog.com/titles/tpdsl/language-implementation-patterns/)
+
 
 ### Feature
 * [x] FirstSet generate.
@@ -74,3 +75,6 @@ More demo see the [`cmd/demo.bnf`](cmd/demo.bnf), or [`testdata`](testdata/testd
 * [Compiler Construction](https://learning.oreilly.com/library/view/compiler-construction/9789332524590/)
 * [Parsing Topics](http://www.mollypages.org/page/grammar/index.mp#generaldeter) **Note**: some example is confused(some letter is not printed in the web page. so maybe confused when reading it.)
 * [Online calculate FIRST/FOLLOW/PREDICT](http://hackingoff.com/compilers/predict-first-follow-set).
+
+### Rule
+![](./rule.png)
