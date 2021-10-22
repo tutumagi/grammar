@@ -1,6 +1,7 @@
 ## Generate FIRST/FOLLOW/PREDICT Set from BNF.
 We can use it to study parser theory. The generate [rule](#rule) is from [\<Language Implementation Patterns\>](https://pragprog.com/titles/tpdsl/language-implementation-patterns/)
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/tutumagi/grammar)](https://goreportcard.com/report/github.com/tutumagi/grammar)
 [![codecov](https://codecov.io/gh/tutumagi/grammar/branch/main/graph/badge.svg?token=YAUNZ9MELL)](https://codecov.io/gh/tutumagi/grammar)
 
 ### Feature
