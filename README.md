@@ -79,4 +79,10 @@ More demo see the [`cmd/demo.bnf`](cmd/demo.bnf), or [`testdata`](testdata/testd
 * [Online calculate FIRST/FOLLOW/PREDICT](http://hackingoff.com/compilers/predict-first-follow-set).
 
 ### Rule
+
+Definition in [FirstFollow](https://www.cs.uaf.edu/~cs331/notes/FirstFollow.pdf)
+1. `FirstSet`: If `a` is any string of grammar symbols, let `FIRST(a)` be the set of terminals that begin the strings derived from `a`. If `a -> e` then `e` is also in `FIRST(a)`.
+2. `FollowSet`: Define `FOLLOW(A)`, for nonterminal `A`, to be the set of terminals a that can appear immediately to the right of `A` in some sentential form, that is, the set of terminals a such that there exists a derivation of the form `S -> aAab` for some `a` and `b`. Note that there may, at some time during the derivation, have been symbols between `A` and `a`, but if so, they derived `e` and disappeared. If `A` can be the rightmost symbol in some sentential form, then `$`, representing the input right endmarker, is in `FOLLOW(A)`.
+
+Compute Rule in [\<Language Implementation Patterns\>](https://pragprog.com/titles/tpdsl/language-implementation-patterns/)
 ![](./rule.png)
