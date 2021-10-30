@@ -77,6 +77,7 @@ More demo see the [`cmd/demo.bnf`](cmd/demo.bnf), or [`testdata`](testdata/testd
 * [Compiler Construction](https://learning.oreilly.com/library/view/compiler-construction/9789332524590/)
 * [Parsing Topics](http://www.mollypages.org/page/grammar/index.mp#generaldeter) **Note**: some example is confused(some letter is not printed in the web page. so maybe confused when reading it.)
 * [Online calculate FIRST/FOLLOW/PREDICT](http://hackingoff.com/compilers/predict-first-follow-set).
+* [BNF and EBNF: What are they and how do they work?](https://www.garshol.priv.no/download/text/bnf.html#id4.4.)
 
 ### Rule
 
